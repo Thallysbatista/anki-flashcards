@@ -1,0 +1,14 @@
+# Ambientes virtuais
+venv/
+__pycache__/
+
+# Arquivos locais
+*.mp3
+*.apkg
+*.json
+.env
+.DS_Store
+
+# Pastas temporárias
+audios/
+decks/
