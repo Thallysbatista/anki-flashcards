@@ -3,14 +3,14 @@
 import os
 from fastapi import FastAPI, Query, Request
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
+
 from app.generator import gerar_frases
 from app.tts import gerar_audios
 from app.utils import carregar_frases_json
 from app.anki_builder import gerar_deck
-from fastapi.staticfiles import StaticFiles
-from fastapi.requests import Request  
 
-# Garante que a pasta decks exista ANTES de montar os arquivos estáticos
+# Garante que a pasta `decks/` exista antes de montar os estáticos
 os.makedirs("decks", exist_ok=True)
 
 app = FastAPI(
@@ -45,32 +45,25 @@ async def generate_frases(
 
 
 @app.get("/generate-audios")
-async def generate_audios():
+async def generate_audios_endpoint():
     try:
         frases = carregar_frases_json()
         caminhos = gerar_audios(frases)
-        nomes_arquivos = [os.path.basename(c) for c in caminhos]
-
-        return {
-            "quantidade": len(nomes_arquivos),
-            "arquivos": nomes_arquivos
-        }
-
+        nomes = [os.path.basename(c) for c in caminhos]
+        return {"quantidade": len(nomes), "arquivos": nomes}
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": str(e)})
 
 
 @app.get("/generate-deck")
-async def generate_deck():
+async def generate_deck_endpoint():
     try:
         caminho = gerar_deck()
-        nome_arquivo = os.path.basename(caminho)
-        return {
-            "deck": nome_arquivo,
-            "caminho": caminho
-        }
+        nome = os.path.basename(caminho)
+        return {"deck": nome, "caminho": caminho}
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": str(e)})
+
 
 # --------------------------------------------
 # 📌 PIPELINE COMPLETA - GERAR DECK AUTOMATICAMENTE
@@ -78,7 +71,7 @@ async def generate_deck():
 # 1. Gera frases com LLM (OpenAI)
 # 2. Gera áudios com ElevenLabs
 # 3. Cria um deck .apkg com frases + áudio
-# Retorna o nome e caminho do deck gerado.
+# Retorna o nome do deck e URL para download.
 # --------------------------------------------
 
 @app.get("/pipeline")
@@ -89,9 +82,11 @@ async def pipeline(
     model: str = Query("gpt-3.5-turbo")
 ):
     try:
+        # 1) gera frases e salva em frases.json
         frases = gerar_frases(n=n, verbo=verbo, model=model, salvar=True)
-        caminhos_audios = gerar_audios(frases)
 
+        # 2) gera áudios para cada frase
+        caminhos_audios = gerar_audios(frases)
         if len(caminhos_audios) < len(frases):
             return JSONResponse(status_code=500, content={
                 "error": "Nem todos os áudios foram gerados.",
@@ -99,12 +94,13 @@ async def pipeline(
                 "audios_gerados": len(caminhos_audios)
             })
 
+        # 3) gera o deck .apkg
         caminho_deck = gerar_deck()
         nome_deck = os.path.basename(caminho_deck)
 
-        # Cria URL absoluta de download
+        # monta a URL pública de download
         host_url = request.base_url._url.rstrip("/")
-        deck_url = f"{host_url}/decks/{nome_deck}"
+        url_download = f"{host_url}/decks/{nome_deck}"
 
         return {
             "mensagem": "Pipeline executada com sucesso!",
@@ -112,16 +108,15 @@ async def pipeline(
             "verbo": verbo,
             "quantidade_frases": n,
             "deck": nome_deck,
-            "url_download": deck_url
+            "url_download": url_download
         }
 
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": str(e)})
-    
 
-# Servir arquivos estáticos: HTML + decks
-# Servir os decks primeiro
+
+# Servir arquivos estáticos:
+# 1) pasta de decks (deve existir em /app/decks)
 app.mount("/decks", StaticFiles(directory="decks"), name="decks")
-# Depois o HTML
+# 2) front-end estático (index.html em /app/static)
 app.mount("/", StaticFiles(directory="static", html=True), name="static")
-

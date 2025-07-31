@@ -1,4 +1,4 @@
-<!-- index.html -->
+<!-- static/index.html -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -10,21 +10,18 @@
       max-width: 500px;
       margin: 50px auto;
     }
-    label {
-      font-weight: bold;
-    }
+    label { font-weight: bold; }
     input, button {
       width: 100%;
       padding: 10px;
       margin-bottom: 15px;
     }
-    #resultado {
-      margin-top: 20px;
-    }
+    #resultado { margin-top: 20px; }
   </style>
 </head>
 <body>
   <h1>Gerador de Flashcards para Anki</h1>
+
   <label for="verbo">Verbo em inglês:</label>
   <input type="text" id="verbo" placeholder="Ex: get" value="get" />
 
@@ -39,24 +36,26 @@
     async function executarPipeline() {
       const verbo = document.getElementById("verbo").value;
       const quantidade = document.getElementById("quantidade").value;
-      const resultadoDiv = document.getElementById("resultado");
-      resultadoDiv.innerHTML = "Gerando deck, por favor aguarde...";
+      const div = document.getElementById("resultado");
+      div.innerHTML = "Gerando deck, por favor aguarde...";
 
       try {
-        const response = await fetch(`/pipeline?n=${quantidade}&verbo=${verbo}`);
-        const data = await response.json();
+        const res = await fetch(`/pipeline?n=${quantidade}&verbo=${verbo}`);
+        const data = await res.json();
 
-        if (response.ok) {
-          resultadoDiv.innerHTML = `
+        if (res.ok) {
+          div.innerHTML = `
             <p><strong>Deck gerado com sucesso!</strong></p>
             <p>Nome do deck: ${data.deck}</p>
-            <a href="${data.url_download}" download>📥 Baixar deck .apkg</a>
+            <a href="${data.url_download}" download>
+              📥 Baixar deck .apkg
+            </a>
           `;
         } else {
-          resultadoDiv.innerHTML = `<p style="color:red;">Erro: ${data.error}</p>`;
+          div.innerHTML = `<p style="color:red;">Erro: ${data.error}</p>`;
         }
-      } catch (error) {
-        resultadoDiv.innerHTML = `<p style="color:red;">Erro ao conectar com a API.</p>`;
+      } catch (err) {
+        div.innerHTML = `<p style="color:red;">Erro ao conectar com a API.</p>`;
       }
     }
   </script>
