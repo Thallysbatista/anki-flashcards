@@ -58,13 +58,13 @@ def gerar_audios(frases: list) -> list:
                 "similarity_boost": 0.75
             }
         }
-
+        print(f"🔐 Chave dentro da função: {API_KEY}")
         response = requests.post(
             f"https://api.elevenlabs.io/v1/text-to-speech/{VOICE_ID}",
             headers=headers,
             json=body
         )
-
+        print("🧾 Resposta da Eleven:", response.status_code, response.text)
         if response.status_code == 200:
             with open(caminho, "wb") as f:
                 f.write(response.content)
