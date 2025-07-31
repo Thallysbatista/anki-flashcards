@@ -120,7 +120,7 @@ async def pipeline(
 
 # Servir arquivos estáticos: HTML + decks
 # Servir os decks primeiro
-app.mount("/decks", StaticFiles(directory="decks"), name="decks")
+app.mount("/decks", StaticFiles(directory="app/decks"), name="decks")
 # Depois o HTML
 app.mount("/", StaticFiles(directory="static", html=True), name="static")
 
