@@ -13,6 +13,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 API_KEY = os.getenv("ELEVEN_API_KEY")
+print("🔑 Eleven API Key carregada:", API_KEY)
 VOICE_ID = "21m00Tcm4TlvDq8ikWAM"  # ID padrão (Rachel), pode ser parametrizado depois
 OUTPUT_DIR = "audios"
 
