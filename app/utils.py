@@ -11,7 +11,7 @@ def salvar_frases_json(frases: list, path: str = "frases.json") -> None:
         with open(path, "w", encoding="utf-8") as f:
             json.dump(frases, f, ensure_ascii=False, indent=2)
     except Exception as e:
-        raise IOError(f"Erro ao salvar o arquivo {path}: {e}")
+        raise IOError(f"Erro ao salvar o arquivo {path}: {e}") 
 
 
 def carregar_frases_json(path: str = "frases.json") -> list:
