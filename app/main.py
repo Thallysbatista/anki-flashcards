@@ -1,7 +1,7 @@
 # app/main.py
 
 import os
-from fastapi import FastAPI, Query
+from fastapi import FastAPI, Query, Request
 from fastapi.responses import JSONResponse
 from app.generator import gerar_frases
 from app.tts import gerar_audios
@@ -10,7 +10,8 @@ from app.anki_builder import gerar_deck
 from fastapi.staticfiles import StaticFiles
 from fastapi.requests import Request  
 
-
+# Garante que a pasta decks exista ANTES de montar os arquivos estáticos
+os.makedirs("decks", exist_ok=True)
 
 app = FastAPI(
     title="Anki Flashcards API",
@@ -120,7 +121,7 @@ async def pipeline(
 
 # Servir arquivos estáticos: HTML + decks
 # Servir os decks primeiro
-app.mount("/decks", StaticFiles(directory="app/decks"), name="decks")
+app.mount("/decks", StaticFiles(directory="decks"), name="decks")
 # Depois o HTML
 app.mount("/", StaticFiles(directory="static", html=True), name="static")
 

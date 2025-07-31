@@ -10,8 +10,11 @@ import genanki
 from app.utils import carregar_frases_json
 from app.tts import gerar_nome_arquivo
 
+
 DECKS_DIR = "decks"
 AUDIO_DIR = "audios"
+
+os.makedirs(DECKS_DIR, exist_ok=True)
 
 def gerar_deck(nome_deck: str = "Frases Inglês") -> str:
     """
@@ -54,7 +57,7 @@ def gerar_deck(nome_deck: str = "Frases Inglês") -> str:
         caminho_audio = os.path.join(AUDIO_DIR, nome_audio)
 
         if not os.path.exists(caminho_audio):
-            print(f"Áudio não encontrado para: {texto_en}")
+            print(f"⚠️ Áudio não encontrado para: {texto_en}")
             continue
 
         media_files.append(caminho_audio)
@@ -66,10 +69,13 @@ def gerar_deck(nome_deck: str = "Frases Inglês") -> str:
 
         deck.add_note(note)
 
-    # Nome do arquivo final
+     # Aqui salvamos o deck e imprimimos para debug
     nome_arquivo = f"deck_{deck_id}.apkg"
     caminho_final = os.path.join(DECKS_DIR, nome_arquivo)
-
     genanki.Package(deck, media_files).write_to_file(caminho_final)
+
+    # Debug: confirma onde salvou e se realmente existe
+    print(f"✅ Deck salvo em: {caminho_final}")
+    print(f"📂 Existe? {os.path.exists(caminho_final)}")
 
     return caminho_final
