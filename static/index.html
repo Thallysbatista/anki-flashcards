@@ -38,22 +38,26 @@
       const quantidade = document.getElementById("quantidade").value;
       const div = document.getElementById("resultado");
       div.innerHTML = "Gerando deck, por favor aguarde...";
-
+    
       try {
         const res = await fetch(`/pipeline?n=${quantidade}&verbo=${verbo}`);
         const data = await res.json();
-
-        if (res.ok) {
-          div.innerHTML = `
-            <p><strong>Deck gerado com sucesso!</strong></p>
-            <p>Nome do deck: ${data.deck}</p>
-            <a href="${data.url_download}" download>
-              📥 Baixar deck .apkg
-            </a>
-          `;
-        } else {
+      
+        if (!res.ok) {
           div.innerHTML = `<p style="color:red;">Erro: ${data.error}</p>`;
+          return;
         }
+      
+        // Monta o link de download de forma **relativa**, para evitar questões de protocolo
+        const link = `/decks/${data.deck}`;
+      
+        div.innerHTML = `
+          <p><strong>Deck gerado com sucesso!</strong></p>
+          <p>Nome do deck: ${data.deck}</p>
+          <a id="download-link" href="${link}" download="${data.deck}" target="_blank">
+            📥 Baixar deck .apkg
+          </a>
+        `;
       } catch (err) {
         div.innerHTML = `<p style="color:red;">Erro ao conectar com a API.</p>`;
       }
